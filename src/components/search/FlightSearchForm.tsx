@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { 
-  MapPinIcon, 
   CalendarIcon, 
   UserGroupIcon,
   ArrowRightIcon 
 } from '@heroicons/react/24/outline';
 import type { FlightSearchParams } from '../../types/flight';
+import AirportAutocomplete from './AirportAutocomplete';
 
 interface FlightSearchFormProps {
   onSearch: (params: FlightSearchParams) => void;
@@ -80,42 +80,24 @@ const FlightSearchForm = ({ onSearch, isLoading = false }: FlightSearchFormProps
 
         {/* Origin and Destination */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              From
-            </label>
-            <div className="relative">
-              <MapPinIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="City or airport"
-                value={searchParams.origin}
-                onChange={(e) => handleInputChange('origin', e.target.value)}
-                className="input-field pl-10"
-                required
-              />
-            </div>
-          </div>
+          <AirportAutocomplete
+            value={searchParams.origin}
+            onChange={(value) => handleInputChange('origin', value)}
+            placeholder="City or airport"
+            label="From"
+          />
 
           <div className="relative">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              To
-            </label>
-            <div className="relative">
-              <MapPinIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="text"
-                placeholder="City or airport"
-                value={searchParams.destination}
-                onChange={(e) => handleInputChange('destination', e.target.value)}
-                className="input-field pl-10"
-                required
-              />
-            </div>
+            <AirportAutocomplete
+              value={searchParams.destination}
+              onChange={(value) => handleInputChange('destination', value)}
+              placeholder="City or airport"
+              label="To"
+            />
             <button
               type="button"
               onClick={swapLocations}
-              className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600"
+              className="absolute right-2 top-1/2 transform -translate-y-1/2 p-1 text-gray-400 hover:text-gray-600 z-10"
             >
               <ArrowRightIcon className="h-4 w-4 rotate-90" />
             </button>
