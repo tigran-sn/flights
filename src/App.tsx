@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import Header from './components/layout/Header'
 import FlightSearchForm from './components/search/FlightSearchForm'
-import { FlightSearchParams, SearchResult } from './types/flight'
+import type { FlightSearchParams, SearchResult } from './types/flight'
 import FlightAPI from './services/api'
 
 function App() {

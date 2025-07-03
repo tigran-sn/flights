@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { FlightSearchParams, SearchResult } from '../types/flight';
+import type { FlightSearchParams, SearchResult } from '../types/flight';
 
 // Sky Scrapper API configuration
 const API_BASE_URL = 'https://sky-scrapper.p.rapidapi.com/api/v1';

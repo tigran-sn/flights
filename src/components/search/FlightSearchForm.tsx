@@ -5,7 +5,7 @@ import {
   UserGroupIcon,
   ArrowRightIcon 
 } from '@heroicons/react/24/outline';
-import { FlightSearchParams } from '../../types/flight';
+import type { FlightSearchParams } from '../../types/flight';
 
 interface FlightSearchFormProps {
   onSearch: (params: FlightSearchParams) => void;
