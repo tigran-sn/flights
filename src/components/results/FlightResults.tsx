@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { 
   FunnelIcon, 
   ArrowsUpDownIcon,
@@ -6,6 +6,7 @@ import {
 } from '@heroicons/react/24/outline';
 import type { Flight, FlightSearchFilters } from '../../types/flight';
 import FlightCard from './FlightCard';
+import FlightFilters from '../search/FlightFilters';
 
 interface FlightResultsProps {
   flights: Flight[];
@@ -26,6 +27,27 @@ const FlightResults = ({
 }: FlightResultsProps) => {
   const [sortBy, setSortBy] = useState<'price' | 'duration' | 'departure'>('price');
   const [filters, setFilters] = useState<FlightSearchFilters>({});
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+
+  // Calculate available airlines from flights
+  const availableAirlines = useMemo(() => {
+    const airlines = new Set(flights.map(flight => flight.airline));
+    return Array.from(airlines).sort();
+  }, [flights]);
+
+  // Calculate max price for price range slider
+  const maxPrice = useMemo(() => {
+    return flights.length > 0 ? Math.max(...flights.map(flight => flight.price)) : 1000;
+  }, [flights]);
+
+  // Helper function to get departure time category
+  const getDepartureTimeCategory = (departureTime: string) => {
+    const hour = new Date(departureTime).getHours();
+    if (hour >= 6 && hour < 12) return 'morning';
+    if (hour >= 12 && hour < 18) return 'afternoon';
+    if (hour >= 18 && hour < 24) return 'evening';
+    return 'night';
+  };
 
   const sortedFlights = [...flights].sort((a, b) => {
     switch (sortBy) {
@@ -41,9 +63,24 @@ const FlightResults = ({
   });
 
   const filteredFlights = sortedFlights.filter(flight => {
+    // Price filter
     if (filters.maxPrice && flight.price > filters.maxPrice) return false;
+    
+    // Stops filter
     if (filters.stops && filters.stops.length > 0 && !filters.stops.includes(flight.stops)) return false;
+    
+    // Airlines filter
     if (filters.airlines && filters.airlines.length > 0 && !filters.airlines.includes(flight.airline)) return false;
+    
+    // Departure time filter
+    if (filters.departureTime && filters.departureTime.length > 0) {
+      const timeCategory = getDepartureTimeCategory(flight.departureTime);
+      if (!filters.departureTime.includes(timeCategory)) return false;
+    }
+    
+    // Cabin class filter
+    if (filters.cabinClass && filters.cabinClass.length > 0 && !filters.cabinClass.includes(flight.cabinClass)) return false;
+    
     return true;
   });
 
@@ -122,32 +159,63 @@ const FlightResults = ({
           </div>
           
           {/* Filter Button */}
-          <button className="btn-secondary text-sm px-3 py-2">
+          <button 
+            onClick={() => setIsFiltersOpen(!isFiltersOpen)}
+            className="btn-secondary text-sm px-3 py-2"
+          >
             <FunnelIcon className="h-4 w-4 mr-1" />
             Filters
           </button>
         </div>
       </div>
 
-      {/* Flight Cards */}
-      <div className="grid gap-4">
-        {filteredFlights.map((flight) => (
-          <FlightCard
-            key={flight.id}
-            flight={flight}
-            onSelect={onFlightSelect}
+      {/* Filters and Results Layout */}
+      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+        {/* Filters Sidebar */}
+        <div className="lg:col-span-1">
+          <FlightFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            availableAirlines={availableAirlines}
+            maxPrice={maxPrice}
+            isOpen={isFiltersOpen}
+            onToggle={() => setIsFiltersOpen(!isFiltersOpen)}
           />
-        ))}
-      </div>
-
-      {/* Load More Button (if needed) */}
-      {filteredFlights.length >= 10 && (
-        <div className="text-center">
-          <button className="btn-secondary">
-            Load More Flights
-          </button>
         </div>
-      )}
+
+        {/* Flight Results */}
+        <div className="lg:col-span-3">
+          <div className="grid gap-4">
+            {filteredFlights.map((flight) => (
+              <FlightCard
+                key={flight.id}
+                flight={flight}
+                onSelect={onFlightSelect}
+              />
+            ))}
+          </div>
+
+          {/* No results message */}
+          {filteredFlights.length === 0 && flights.length > 0 && (
+            <div className="text-center py-12">
+              <NoSymbolIcon className="mx-auto h-12 w-12 text-gray-400" />
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No flights match your filters</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                Try adjusting your filter criteria.
+              </p>
+            </div>
+          )}
+
+          {/* Load More Button (if needed) */}
+          {filteredFlights.length >= 10 && (
+            <div className="text-center mt-6">
+              <button className="btn-secondary">
+                Load More Flights
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
