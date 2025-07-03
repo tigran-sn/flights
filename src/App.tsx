@@ -1,21 +1,45 @@
 import { useState } from 'react'
 import Header from './components/layout/Header'
 import FlightSearchForm from './components/search/FlightSearchForm'
-import type { FlightSearchParams, SearchResult } from './types/flight'
+import FlightResults from './components/results/FlightResults'
+import type { FlightSearchParams, SearchResult, Flight } from './types/flight'
 import FlightAPI from './services/api'
+import { mockFlights } from './utils/mockData'
 
 function App() {
   const [searchResults, setSearchResults] = useState<SearchResult | null>(null)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [currentSearchParams, setCurrentSearchParams] = useState<{
+    origin: string;
+    destination: string;
+    departureDate: string;
+  } | null>(null)
 
   const handleSearch = async (params: FlightSearchParams) => {
     setIsLoading(true)
     setError(null)
+    setCurrentSearchParams({
+      origin: params.origin,
+      destination: params.destination,
+      departureDate: params.departureDate,
+    })
     
     try {
-      const results = await FlightAPI.searchFlights(params)
-      setSearchResults(results)
+      // For now, use mock data instead of API call
+      // const results = await FlightAPI.searchFlights(params)
+      // setSearchResults(results)
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1500))
+      
+      // Use mock data
+      setSearchResults({
+        flights: mockFlights,
+        totalCount: mockFlights.length,
+        searchParams: params,
+        timestamp: new Date().toISOString(),
+      })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'An error occurred')
     } finally {
@@ -49,36 +73,18 @@ function App() {
             </div>
           )}
 
-          {/* Search Results Placeholder */}
-          {searchResults && (
+          {/* Flight Results */}
+          {(searchResults || isLoading) && currentSearchParams && (
             <div className="mt-8">
-              <h3 className="text-xl font-semibold text-gray-900 mb-4">
-                Search Results ({searchResults.totalCount} flights found)
-              </h3>
-              <div className="space-y-4">
-                {searchResults.flights.map((flight) => (
-                  <div key={flight.id} className="card p-4">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="font-medium">
-                          {flight.origin} → {flight.destination}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {flight.airline} • {flight.duration}
-                        </p>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xl font-bold text-primary-600">
-                          ${flight.price}
-                        </p>
-                        <p className="text-sm text-gray-600">
-                          {flight.stops === 0 ? 'Direct' : `${flight.stops} stop${flight.stops > 1 ? 's' : ''}`}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <FlightResults
+                flights={searchResults?.flights || []}
+                isLoading={isLoading}
+                searchParams={currentSearchParams}
+                onFlightSelect={(flight: Flight) => {
+                  console.log('Selected flight:', flight)
+                  // TODO: Handle flight selection
+                }}
+              />
             </div>
           )}
         </div>
