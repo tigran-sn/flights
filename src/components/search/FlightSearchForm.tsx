@@ -1,11 +1,11 @@
 import { useState } from 'react';
 import { 
-  CalendarIcon, 
   UserGroupIcon,
   ArrowRightIcon 
 } from '@heroicons/react/24/outline';
 import type { FlightSearchParams } from '../../types/flight';
 import AirportAutocomplete from './AirportAutocomplete';
+import DatePicker from './DatePicker';
 
 interface FlightSearchFormProps {
   onSearch: (params: FlightSearchParams) => void;
@@ -105,40 +105,13 @@ const FlightSearchForm = ({ onSearch, isLoading = false }: FlightSearchFormProps
         </div>
 
         {/* Dates */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Departure Date
-            </label>
-            <div className="relative">
-              <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-              <input
-                type="date"
-                value={searchParams.departureDate}
-                onChange={(e) => handleInputChange('departureDate', e.target.value)}
-                className="input-field pl-10"
-                required
-              />
-            </div>
-          </div>
-
-          {tripType === 'roundtrip' && (
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Return Date
-              </label>
-              <div className="relative">
-                <CalendarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
-                <input
-                  type="date"
-                  value={searchParams.returnDate}
-                  onChange={(e) => handleInputChange('returnDate', e.target.value)}
-                  className="input-field pl-10"
-                />
-              </div>
-            </div>
-          )}
-        </div>
+        <DatePicker
+          departureDate={searchParams.departureDate}
+          returnDate={searchParams.returnDate}
+          onDepartureDateChange={(date) => handleInputChange('departureDate', date)}
+          onReturnDateChange={(date) => handleInputChange('returnDate', date)}
+          isRoundTrip={tripType === 'roundtrip'}
+        />
 
         {/* Passengers and Cabin Class */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
