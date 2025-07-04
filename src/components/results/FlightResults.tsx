@@ -7,6 +7,7 @@ import {
 import type { Flight, FlightSearchFilters } from '../../types/flight';
 import FlightCard from './FlightCard';
 import FlightFilters from '../search/FlightFilters';
+import Modal from '../ui/Modal';
 
 interface FlightResultsProps {
   flights: Flight[];
@@ -28,6 +29,7 @@ const FlightResults = ({
   const [sortBy, setSortBy] = useState<'price' | 'duration' | 'departure'>('price');
   const [filters, setFilters] = useState<FlightSearchFilters>({});
   const [isFiltersOpen, setIsFiltersOpen] = useState(false);
+  const [selectedFlight, setSelectedFlight] = useState<Flight | null>(null);
 
   // Calculate available airlines from flights
   const availableAirlines = useMemo(() => {
@@ -190,7 +192,7 @@ const FlightResults = ({
               <FlightCard
                 key={flight.id}
                 flight={flight}
-                onSelect={onFlightSelect}
+                onSelect={setSelectedFlight}
               />
             ))}
           </div>
@@ -216,6 +218,60 @@ const FlightResults = ({
           )}
         </div>
       </div>
+
+      {/* Flight Details Modal */}
+      <Modal isOpen={!!selectedFlight} onClose={() => setSelectedFlight(null)} title="Flight Details">
+        {selectedFlight && (
+          <div className="space-y-4">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 bg-primary-100 rounded-full flex items-center justify-center">
+                {/* Airline logo placeholder */}
+                <span className="text-lg font-bold text-primary-600">{selectedFlight.airline[0]}</span>
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-900">{selectedFlight.airline}</h3>
+                <p className="text-sm text-gray-500">Flight {selectedFlight.flightNumber}</p>
+              </div>
+            </div>
+            <div className="flex justify-between">
+              <div>
+                <div className="font-medium text-gray-900">{selectedFlight.origin} → {selectedFlight.destination}</div>
+                <div className="text-sm text-gray-500">{selectedFlight.departureAirport} → {selectedFlight.arrivalAirport}</div>
+              </div>
+              <div className="text-right">
+                <div className="text-lg font-bold text-primary-600">{selectedFlight.price} {selectedFlight.currency}</div>
+                <div className="text-xs text-gray-500">{selectedFlight.cabinClass.replace('_', ' ')}</div>
+              </div>
+            </div>
+            <div className="flex justify-between text-sm text-gray-700">
+              <div>
+                <div>Departure: {new Date(selectedFlight.departureTime).toLocaleString()}</div>
+                <div>Arrival: {new Date(selectedFlight.arrivalTime).toLocaleString()}</div>
+              </div>
+              <div className="text-right">
+                <div>Duration: {selectedFlight.duration}</div>
+                <div>{selectedFlight.stops === 0 ? 'Direct' : `${selectedFlight.stops} stop(s)`}</div>
+              </div>
+            </div>
+            {selectedFlight.layovers && selectedFlight.layovers.length > 0 && (
+              <div className="bg-gray-50 rounded p-3">
+                <div className="font-semibold text-gray-800 mb-1">Layovers:</div>
+                <ul className="list-disc list-inside text-sm text-gray-700">
+                  {selectedFlight.layovers.map((layover, idx) => (
+                    <li key={idx}>{layover}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+            {selectedFlight.baggage && (
+              <div className="text-sm text-gray-700">Baggage: {selectedFlight.baggage}</div>
+            )}
+            {selectedFlight.fareRules && (
+              <div className="text-xs text-gray-500">Fare rules: {selectedFlight.fareRules}</div>
+            )}
+          </div>
+        )}
+      </Modal>
     </div>
   );
 };

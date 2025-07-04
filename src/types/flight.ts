@@ -17,6 +17,9 @@ export interface Flight {
   arrivalAirport: string;
   departureTerminal?: string;
   arrivalTerminal?: string;
+  layovers?: string[];
+  baggage?: string;
+  fareRules?: string;
 }
 
 export interface FlightSearchParams {
